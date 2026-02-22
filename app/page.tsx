@@ -17,7 +17,7 @@ export default async function Home() {
             sora-tech-blog
           </h1>
           <p className="text-xl sm:text-2xl text-[#86868B] font-medium tracking-tight text-balance mx-auto max-w-2xl">
-            趣味人が練習しているプログラミングについてのブログ
+            練習中趣味人のプログラミングブログ
           </p>
         </section>
 
