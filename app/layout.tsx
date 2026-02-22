@@ -3,6 +3,7 @@ import { Inter, Geist_Mono } from "next/font/google";
 import Header from "@/component/Header";
 import Footer from "@/component/Footer";
 import "./globals.css";
+import { GoogleAnalytics } from '@next/third-parties/google'
 
 const inter = Inter({
   variable: "--font-inter",
@@ -32,6 +33,7 @@ export default function RootLayout({
         <Header />
         <main className="flex-1">{children}</main>
         <Footer />
+        <GoogleAnalytics gaId="G-3GJ81VQZK4" />
       </body>
     </html>
   );
