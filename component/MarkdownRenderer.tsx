@@ -45,9 +45,7 @@ export default function MarkdownRenderer({ content }: { content: string }) {
                                         </svg>
                                         <span className="text-sm font-mono text-gray-600">{filename}</span>
                                     </div>
-                                    <pre {...props} className="!mt-0 !rounded-t-none">
-                                        {children}
-                                    </pre>
+                                    <pre {...props} className="!m-0 !rounded-none" style={{ padding: '1rem' }}>{children}</pre>
                                 </div>
                             )
                         }
