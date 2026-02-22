@@ -1,15 +1,46 @@
 'use client'
 
 import Markdown from 'react-markdown'
+import rehypeRaw from 'rehype-raw'
 
 /**
  * Markdown描画コンポーネント
  * react-markdownを使用し、Apple風のTypographyで表示
+ * rehype-highlightでシンタックスハイライト対応
  */
+
+/**
+ * ```tsx:app/layout.tsx 記法を前処理で分離する
+ * → ファイル名情報を HTML コメントとして保持し、言語のみをコードブロックに渡す
+ */
+function preprocessContent(md: string): { text: string; filenames: Map<number, string> } {
+    const filenames = new Map<number, string>()
+    let blockIndex = 0
+    let text = md
+
+    // ```tsx:filepath 記法 → ファイル名を分離
+    text = text.replace(/```(\w+):([^\n]+)/g, (_, lang, filepath) => {
+        filenames.set(blockIndex++, filepath)
+        return '```' + lang
+    })
+
+    // ==テキスト== 記法 → 赤文字に変換（コードブロック内は除外）
+    text = text.replace(/(```[\s\S]*?```)|==([^=]+)==/g, (match, codeBlock, redText) => {
+        if (codeBlock) return codeBlock // コードブロックはそのまま
+        return `<span style="color: #ef4444; font-weight: 600">${redText}</span>`
+    })
+
+    return { text, filenames }
+}
+
 export default function MarkdownRenderer({ content }: { content: string }) {
+    const { text, filenames } = preprocessContent(content)
+    let blockIndex = 0
+
     return (
         <div className="prose">
             <Markdown
+                rehypePlugins={[rehypeRaw]}
                 components={{
                     // 見出しにトラッキングとウェイトを適用
                     h1: ({ children, ...props }) => (
@@ -27,14 +58,10 @@ export default function MarkdownRenderer({ content }: { content: string }) {
                             {children}
                         </a>
                     ),
-                    // コードブロックのスタイリング（```tsx:ファイルパス 記法対応）
+                    // コードブロックのスタイリング（ファイル名表示 + シンタックスハイライト対応）
                     pre: ({ children, ...props }) => {
-                        // children から code 要素の className を取得してファイル名を抽出
-                        const codeChild = Array.isArray(children) ? children[0] : children
-                        const codeProps = (codeChild as React.ReactElement)?.props as Record<string, string> | undefined
-                        const className = codeProps?.className || ''
-                        const match = className.match(/^language-([^:]+):(.+)$/)
-                        const filename = match ? match[2] : null
+                        const currentIndex = blockIndex++
+                        const filename = filenames.get(currentIndex) || null
 
                         if (filename) {
                             return (
@@ -56,18 +83,15 @@ export default function MarkdownRenderer({ content }: { content: string }) {
                         if (isInline) {
                             return <code {...props}>{children}</code>
                         }
-                        // ```tsx:path 記法の場合、language-tsx のみを className に設定
-                        const match = className?.match(/^language-([^:]+):(.+)$/)
-                        const langClass = match ? `language-${match[1]}` : className
                         return (
-                            <code className={langClass} {...props}>
+                            <code className={className} {...props}>
                                 {children}
                             </code>
                         )
                     },
                 }}
             >
-                {content}
+                {text}
             </Markdown>
         </div>
     )

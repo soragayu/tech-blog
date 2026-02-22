@@ -14,6 +14,8 @@ export default function MarkdownGuide() {
         { title: 'テキスト装飾', code: '**太字テキスト**\n*斜体テキスト*\n~~取り消し線~~\n`インラインコード`' },
         { title: 'リスト', code: '- 箇条書き1\n- 箇条書き2\n\n1. 番号付き1\n2. 番号付き2' },
         { title: 'コードブロック', code: '```javascript\nconst hello = "Hello!"\nconsole.log(hello)\n```' },
+        { title: 'ファイル名付きコードブロック', code: '```tsx:app/layout.tsx\nimport React from "react"\n```', note: '言語の後に :ファイルパス でファイル名タブが表示されます' },
+        { title: '赤文字', code: '==ここが赤くなります==', note: '== で囲むと赤い強調表示になります' },
         { title: '画像', code: '![画像の説明](https://画像のURL)', note: '📷 画像アップローダーでアップロードしてURLを取得できます' },
         { title: 'リンク', code: '[表示テキスト](https://リンク先URL)' },
         { title: '引用', code: '> これは引用文です。' },
