@@ -1,5 +1,7 @@
 'use client'
 
+import React from 'react'
+
 import Markdown from 'react-markdown'
 import rehypeRaw from 'rehype-raw'
 
@@ -24,15 +26,34 @@ function preprocessContent(md: string): { text: string; filenames: Map<number, s
         return '```' + lang
     })
 
-    // ==テキスト== 記法 → 赤文字に変換（コードブロック内は除外）
-    text = text.replace(/(```[\s\S]*?```)|==([^=]+)==/g, (match, codeBlock, redText) => {
-        if (codeBlock) return codeBlock // コードブロックはそのまま
+    // ==テキスト== 記法 → 赤文字に変換（コードブロック外のみ）
+    text = text.replace(/(```[\s\S]*?```)|==(.+?)==/g, (match, codeBlock, redText) => {
+        if (codeBlock) return codeBlock
         return `<span style="color: #ef4444; font-weight: 600">${redText}</span>`
     })
 
     return { text, filenames }
 }
 
+/**
+ * コードブロック内の ==テキスト== を赤い span に変換するヘルパー
+ */
+function highlightRedText(children: React.ReactNode): React.ReactNode {
+    return React.Children.map(children, (child) => {
+        if (typeof child === 'string') {
+            const parts = child.split(/(==(?:.+?)==)/g)
+            if (parts.length === 1) return child
+            return parts.map((part, i) => {
+                const match = part.match(/^==(.+?)==$/)
+                if (match) {
+                    return <span key={i} style={{ color: '#ef4444', fontWeight: 600 }}>{match[1]}</span>
+                }
+                return part
+            })
+        }
+        return child
+    })
+}
 export default function MarkdownRenderer({ content }: { content: string }) {
     const { text, filenames } = preprocessContent(content)
     let blockIndex = 0
@@ -85,7 +106,7 @@ export default function MarkdownRenderer({ content }: { content: string }) {
                         }
                         return (
                             <code className={className} {...props}>
-                                {children}
+                                {highlightRedText(children)}
                             </code>
                         )
                     },
