@@ -18,6 +18,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "sora-tech-blog",
   description: "趣味人が練習しているプログラミングについてのブログ",
+  verification: {
+    google: "9RW057h1Via-yehwjiEZSbPd-E8zCgrV0MZ9Dt5ICsI",
+  },
 };
 
 export default function RootLayout({
