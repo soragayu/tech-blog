@@ -16,6 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://sora-tech-blog.vercel.app"),
   title: "sora-tech-blog",
   description: "趣味人が練習しているプログラミングについてのブログ",
   verification: {
