@@ -4,6 +4,7 @@ import React from 'react'
 
 import Markdown from 'react-markdown'
 import rehypeRaw from 'rehype-raw'
+import CodeCopyButton from '@/component/CodeCopyButton'
 
 /**
  * Markdown描画コンポーネント
@@ -54,6 +55,22 @@ function highlightRedText(children: React.ReactNode): React.ReactNode {
         return child
     })
 }
+
+/**
+ * Reactの子要素からプレーンテキストを再帰的に抽出するヘルパー
+ */
+function extractTextFromChildren(children: React.ReactNode): string {
+    let text = ''
+    React.Children.forEach(children, (child) => {
+        if (typeof child === 'string') {
+            text += child
+        } else if (React.isValidElement<{ children?: React.ReactNode }>(child) && child.props.children) {
+            text += extractTextFromChildren(child.props.children)
+        }
+    })
+    return text
+}
+
 export default function MarkdownRenderer({ content }: { content: string }) {
     const { text, filenames } = preprocessContent(content)
     let blockIndex = 0
@@ -79,25 +96,32 @@ export default function MarkdownRenderer({ content }: { content: string }) {
                             {children}
                         </a>
                     ),
-                    // コードブロックのスタイリング（ファイル名表示 + シンタックスハイライト対応）
+                    // コードブロックのスタイリング（ファイル名表示 + コピーボタン + シンタックスハイライト対応）
                     pre: ({ children, ...props }) => {
                         const currentIndex = blockIndex++
                         const filename = filenames.get(currentIndex) || null
+                        const codeText = extractTextFromChildren(children)
 
                         if (filename) {
                             return (
-                                <div className="not-prose rounded-xl overflow-hidden border border-gray-200 my-6">
+                                <div className="not-prose relative group rounded-xl overflow-hidden border border-gray-200 my-6">
                                     <div className="flex items-center gap-2 px-4 py-2 bg-gray-100 border-b border-gray-200">
                                         <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                         </svg>
                                         <span className="text-sm font-mono text-gray-600">{filename}</span>
                                     </div>
+                                    <CodeCopyButton code={codeText} />
                                     <pre {...props} className="!m-0 !rounded-none" style={{ padding: '1rem' }}>{children}</pre>
                                 </div>
                             )
                         }
-                        return <pre {...props}>{children}</pre>
+                        return (
+                            <div className="relative group">
+                                <CodeCopyButton code={codeText} />
+                                <pre {...props}>{children}</pre>
+                            </div>
+                        )
                     },
                     code: ({ children, className, ...props }) => {
                         const isInline = !className
